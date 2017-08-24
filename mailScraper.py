@@ -1,54 +1,71 @@
-try:
-	import urllib.request
-	import ssl
-	from bs4 import BeautifulSoup
-	import random
-	import sys
+#!/usr/bin/env python
 
-	def get_it(link, name):
-		content = []
-		context = ssl._create_unverified_context()
-		webpage = urllib.request.urlopen(link, context=context)
-		html_doc = webpage.read()
-		soup = BeautifulSoup(html_doc, 'html.parser')
-		toText = open(str(name) + ".txt", 'w')
-		words = soup.get_text().split()
+import requests
+import ssl
+from bs4 import BeautifulSoup
+import random
+import sys
 
-		for word in words:
-			if "@" in word:
-				content.append(word)
 
-		content = list(set(content))
+class ScrapeEmails():
+    """testing"""
+    
+    def __init__(self):
+        self.link = "put the link here"
 
-		for entry in content:
-			toText.write(entry + "\n")
+    def check_href(self, content):
+        self.placeholder = "test"
+        self.check_links = content.find_all('a', href=True)
 
-		toText.close()
-		print("Saved: " + str(name) + ".txt")
+        for link in self.check_links:
+            if "@" in link['href']:
+                oh_hai =link['href'].split(':')
+                yield oh_hai[1]
 
-	counter = 0
+    def check_text(self, content):
+        words = content.get_text().split()
+        for word in words:
+            if "@" in word:
+                yield word
 
-	if len(sys.argv) > 1:
-  	  path = sys.argv[1] 
-	else:
-		path = input("Path or URL:\n")
+    def dedup(self, link, text):
+        t = []
+        s = []
+        for i in link:
+            t.append(i)
+            for e in text:
+                s.append(e)
+        fuck = list(set(t) - set(s))
+        result = t + list(fuck)
+        return result
 
-	if (path[0:4] == "http"):
-		get_it(path, counter)
-	else:
-		content = open(path, 'r')
-		for line in content:
-			get_it(line, counter)
-	counter = counter + 1
 
-except ModuleNotFoundError:
-	print("Error importing dependencies.\nMake sure the needed modules are installed, then try again.")
-	sys.exit()
+        
+    def get_it(self):
+        content = []
+        r = requests.get(self.link)
+        html_doc = r.content
+        soup = BeautifulSoup(html_doc, 'html.parser')
+        link_emails = self.check_href(soup)
+        text_emails = self.check_text(soup)
+        herro = self.dedup(link_emails, text_emails)
+        print herro
 
-except IOError:
-	print("Error reading/writing to file.\nPlease try again.")
-	sys.exit()
+        sys.exit()
 
-except:
-	print("Unknown error occurred.\nPlease try again.")
-	sys.exit()
+        toText.close()
+        print("Saved: " + str(name) + ".txt")
+    
+        counter = 0
+        if len(sys.argv) > 1:
+            path = sys.argv[1] 
+        else:
+        
+            path = input("Path or URL:\n")
+    
+        if (path[0:4] == "http"):
+            get_it(path, counter)
+if __name__ == "__main__":
+    se = ScrapeEmails()
+    t = se.get_it()
+    print t
