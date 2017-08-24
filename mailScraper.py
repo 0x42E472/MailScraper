@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import requests
-import ssl
 from bs4 import BeautifulSoup
 import random
 import sys
@@ -45,8 +44,8 @@ class ScrapeEmails():
 
 
         
-    def get_it(self):
-        """TODO: Separate this out to another function"""
+    def main(self):
+        """main"""
         content = []
         r = requests.get(self.link)
         html_doc = r.content
@@ -61,4 +60,4 @@ class ScrapeEmails():
 
 if __name__ == "__main__":
     se = ScrapeEmails()
-    t = se.get_it()
+    t = se.main()
