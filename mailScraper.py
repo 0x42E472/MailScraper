@@ -1,54 +1,64 @@
-try:
-	import urllib.request
-	import ssl
-	from bs4 import BeautifulSoup
-	import random
-	import sys
+#!/usr/bin/env python
+import requests
+import ssl
+from bs4 import BeautifulSoup
+import random
+import sys
 
-	def get_it(link, name):
-		content = []
-		context = ssl._create_unverified_context()
-		webpage = urllib.request.urlopen(link, context=context)
-		html_doc = webpage.read()
-		soup = BeautifulSoup(html_doc, 'html.parser')
-		toText = open(str(name) + ".txt", 'w')
-		words = soup.get_text().split()
 
-		for word in words:
-			if "@" in word:
-				content.append(word)
+class ScrapeEmails():
+    """Practicing some programming."""
+    
+    def __init__(self):
+        """TODO: Change name to domain name of url, change url to accept file or arg"""
+        self.name = "test"
+        self.link = ""
 
-		content = list(set(content))
+    def check_href(self, content):
+        """Check for emails in links."""
+        self.placeholder = "test"
+        self.check_links = content.find_all('a', href=True)
 
-		for entry in content:
-			toText.write(entry + "\n")
+        for link in self.check_links:
+            if "@" in link['href']:
+                oh_hai =link['href'].split(':')
+                yield oh_hai[1]
 
-		toText.close()
-		print("Saved: " + str(name) + ".txt")
+    def check_text(self, content):
+        """Check the html for emails."""
+        words = content.get_text().split()
+        for word in words:
+            if "@" in word:
+                yield word
 
-	counter = 0
+    def dedup(self, link, text):
+        """Dedup the emails from both sources."""
+        t = []
+        s = []
+        for i in link:
+            t.append(i)
+            for e in text:
+                s.append(e)
+        email_list = list(set(t) - set(s))
+        result = t + list(email_list)
+        return result
 
-	if len(sys.argv) > 1:
-  	  path = sys.argv[1] 
-	else:
-		path = input("Path or URL:\n")
 
-	if (path[0:4] == "http"):
-		get_it(path, counter)
-	else:
-		content = open(path, 'r')
-		for line in content:
-			get_it(line, counter)
-	counter = counter + 1
+        
+    def get_it(self):
+        """TODO: Separate this out to another function"""
+        content = []
+        r = requests.get(self.link)
+        html_doc = r.content
+        soup = BeautifulSoup(html_doc, 'html.parser')
+        link_emails = self.check_href(soup)
+        text_emails = self.check_text(soup)
+        the_goods = self.dedup(link_emails, text_emails)
+        f = open(self.name,"w+")
+        for i in the_goods:
+            f.write("{0}\n".format(i))
+        f.close()
 
-except ModuleNotFoundError:
-	print("Error importing dependencies.\nMake sure the needed modules are installed, then try again.")
-	sys.exit()
-
-except IOError:
-	print("Error reading/writing to file.\nPlease try again.")
-	sys.exit()
-
-except:
-	print("Unknown error occurred.\nPlease try again.")
-	sys.exit()
+if __name__ == "__main__":
+    se = ScrapeEmails()
+    t = se.get_it()
