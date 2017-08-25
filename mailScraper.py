@@ -76,7 +76,7 @@ class ThreadWorker(threading.Thread):
 
             time.sleep(1)
 
-        print "Stopping {0}".format(self.name)
+        print(Fore.YELLOW + "Stopping {0}".format(self.name))
 
 
 #
